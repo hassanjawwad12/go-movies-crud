@@ -37,6 +37,38 @@ func GetMovies(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func DeleteMovie(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+
+	for index, item := range movies {
+		if item.Id == params["id"] {
+
+			// Append the other data in the slice except the matching id
+			movies = append(movies[:index], movies[index+1:]...)
+			break
+		}
+	}
+	w.Write([]byte("Movie Deleted Successfuly!"))
+	w.Write([]byte("These are the remaining movies:"))
+	json.NewEncoder(w).Encode(movies)
+}
+
+func GetMovie(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+
+	for _, item := range movies {
+		if item.Id == params["id"] {
+			err := json.NewEncoder(w).Encode(item)
+			if err != nil {
+				fmt.Println("Error has occured")
+			}
+			return
+		}
+	}
+}
+
 func main() {
 
 	// Create the router
@@ -64,12 +96,44 @@ func main() {
 			LastName:  "Nolan",
 		},
 	})
+	movies = append(movies, Movie{
+		Id:    "3",
+		Isbn:  "5678",
+		Title: "The Shawshank Redemption",
+
+		Director: &Director{
+			FirstName: "Frank",
+			LastName:  "Darabont",
+		},
+	})
+
+	movies = append(movies, Movie{
+		Id:    "4",
+		Isbn:  "9101",
+		Title: "Pulp Fiction",
+
+		Director: &Director{
+			FirstName: "Quentin",
+			LastName:  "Tarantino",
+		},
+	})
+
+	movies = append(movies, Movie{
+		Id:    "5",
+		Isbn:  "1121",
+		Title: "The Dark Knight",
+
+		Director: &Director{
+			FirstName: "Christopher",
+			LastName:  "Nolan",
+		},
+	})
 
 	router.HandleFunc("/movies", GetMovies).Methods("GET")
-	//router.HandleFunc("/movies/{id}", GetMovie).Methods("GET")
+	router.HandleFunc("/movies/{id}", GetMovie).Methods("GET")
 	//router.HandleFunc("/movies", CreateMovie).Methods("POST")
 	//router.HandleFunc("/movies/{id}", UpdateMovie).Methods("PUT")
-	//router.HandleFunc("/movies/{id}", GetMovie).Methods("DELETE")
+	router.HandleFunc("/movies/{id}", DeleteMovie).Methods("DELETE")
 
 	fmt.Println("Starting server at port: 8000")
 
