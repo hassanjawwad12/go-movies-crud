@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -69,6 +71,24 @@ func GetMovie(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func CreateMovie(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application-json")
+
+	var movie Movie
+
+	// Add the decoded value in the variable
+	_ = json.NewDecoder(r.Body).Decode(&movie)
+
+	// Convert int to string
+	movie.Id = strconv.Itoa(rand.Intn(1000000))
+
+	// New movie appended in the slice
+	movies = append(movies, movie)
+
+	w.Write([]byte("Movie added successfuly"))
+	json.NewEncoder(w).Encode(movie)
+}
+
 func main() {
 
 	// Create the router
@@ -131,7 +151,7 @@ func main() {
 
 	router.HandleFunc("/movies", GetMovies).Methods("GET")
 	router.HandleFunc("/movies/{id}", GetMovie).Methods("GET")
-	//router.HandleFunc("/movies", CreateMovie).Methods("POST")
+	router.HandleFunc("/movies", CreateMovie).Methods("POST")
 	//router.HandleFunc("/movies/{id}", UpdateMovie).Methods("PUT")
 	router.HandleFunc("/movies/{id}", DeleteMovie).Methods("DELETE")
 
